@@ -1,16 +1,19 @@
-from fastapi import APIRouter
-from pydantic import BaseModel
-from typing import Optional, AsyncGenerator
 import asyncio
 import json
+from typing import Optional, AsyncGenerator
+
+from fastapi import APIRouter
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/v1", tags=["Completions"])
+
 
 class CompletionRequest(BaseModel):
     model: str
     prompt: str
     max_tokens: Optional[int] = 50
     stream: Optional[bool] = False
+
 
 # mock 스트리밍 유틸
 async def mock_stream_completion(prompt: str) -> AsyncGenerator[dict, None]:
@@ -44,6 +47,7 @@ async def mock_stream_completion(prompt: str) -> AsyncGenerator[dict, None]:
     }
     yield final
 
+
 @router.post("/completions")
 async def completions(req: CompletionRequest):
     if not req.stream:
@@ -57,6 +61,7 @@ async def completions(req: CompletionRequest):
                 {"text": mock_output, "index": 0, "finish_reason": "stop"}
             ]
         }
+
     # 스트리밍 모드
     async def event_gen():
         async for chunk in mock_stream_completion(req.prompt):

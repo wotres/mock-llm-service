@@ -1,20 +1,24 @@
+import asyncio
+import json
+from typing import List, AsyncGenerator, Optional
+
 from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from typing import List, AsyncGenerator, Optional
-import asyncio
-import json
 
 router = APIRouter(prefix="/v1/chat", tags=["Chat"])
+
 
 class Message(BaseModel):
     role: str
     content: str
 
+
 class ChatRequest(BaseModel):
     model: str
     messages: List[Message]
     stream: Optional[bool] = False  # 기본 비스트리밍 모드
+
 
 # 내부 유틸: mock 응답 스트리밍 제너레이터
 async def mock_stream_response(user_message: str) -> AsyncGenerator[dict, None]:
@@ -53,6 +57,7 @@ async def mock_stream_response(user_message: str) -> AsyncGenerator[dict, None]:
         ]
     }
     yield final
+
 
 @router.post("/completions")
 async def chat_completion(req: ChatRequest, request: Request):

@@ -1,13 +1,16 @@
-from fastapi import APIRouter
-from pydantic import BaseModel
 from typing import List
 
+from fastapi import APIRouter
+from pydantic import BaseModel
+
 router = APIRouter(prefix="/v1", tags=["Rerank"])
+
 
 class RerankRequest(BaseModel):
     model: str
     query: str
     documents: List[str]
+
 
 @router.post("/rerank")
 async def rerank(req: RerankRequest):

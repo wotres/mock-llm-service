@@ -1,9 +1,11 @@
+import hashlib
+from typing import Union, List
+
 from fastapi import APIRouter
 from pydantic import BaseModel
-from typing import Union, List
-import hashlib
 
 router = APIRouter(prefix="/v1", tags=["Embeddings"])
+
 
 class EmbeddingRequest(BaseModel):
     model: str
