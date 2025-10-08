@@ -1,28 +1,29 @@
-import hashlib
 from typing import Union, List
-
 from fastapi import APIRouter
 from pydantic import BaseModel
+from sentence_transformers import SentenceTransformer
 
 router = APIRouter(prefix="/v1", tags=["Embeddings"])
+
+# ✅ 실제 모델 로드 (서버 시작 시 한 번만)
+model = SentenceTransformer("all-MiniLM-L6-v2")
 
 
 class EmbeddingRequest(BaseModel):
     model: str
-    input: Union[str, List[str]]  # ✅ 문자열 or 문자열 배열 모두 허용
+    input: Union[str, List[str]]  # 문자열 or 문자열 배열 모두 허용
 
 
-def mock_embedding_vector(text: str):
-    """간단한 해시 기반 벡터 (mock)"""
-    digest = hashlib.sha256(text.encode()).digest()
-    # 8차원 예시 벡터
-    return [round(b / 255, 4) for b in digest[:8]]
+def real_embedding_vector(text: str):
+    """SentenceTransformer 기반 실제 384차원 벡터 생성"""
+    vector = model.encode(text)
+    return vector.tolist()  # numpy array → list 변환
 
 
 @router.post("/embeddings")
 async def create_embeddings(req: EmbeddingRequest):
     """
-    OpenAI Embeddings API 스타일 모방:
+    OpenAI Embeddings API 스타일:
     - input: string or list[string]
     - 반환 구조: data: [{object, embedding, index}, ...]
     """
@@ -30,7 +31,7 @@ async def create_embeddings(req: EmbeddingRequest):
 
     data = []
     for i, text in enumerate(inputs):
-        vector = mock_embedding_vector(text)
+        vector = real_embedding_vector(text)
         data.append({
             "object": "embedding",
             "index": i,
